@@ -1,0 +1,93 @@
+
+#include <filesystem>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+
+namespace fs = std::filesystem;
+
+/* ================== 核心接口 ================== */
+bool copyAndRenamePng(
+    const fs::path& srcDir,
+    const fs::path& dstDir
+)
+{
+    if (!fs::exists(srcDir) || !fs::is_directory(srcDir))
+    {
+        std::wcerr << L"源目录不存在: " << srcDir.wstring() << std::endl;
+        return false;
+    }
+
+    /* 创建目标目录 */
+    fs::create_directories(dstDir);
+
+    /* 收集所有 png 文件 */
+    std::vector<fs::path> pngFiles;
+
+    for (const auto& entry : fs::recursive_directory_iterator(srcDir))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        fs::path p = entry.path();
+        std::wstring ext = p.extension().wstring();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
+
+        if (ext == L".png")
+            pngFiles.push_back(p);
+    }
+
+    if (pngFiles.empty())
+    {
+        std::wcout << L"目录中没有 png 文件" << std::endl;
+        return true;
+    }
+
+    /* 按文件名排序（保证顺序稳定） */
+    std::sort(pngFiles.begin(), pngFiles.end());
+
+    /* 拷贝并重命名 */
+    int index = 1;
+    for (const auto& pngPath : pngFiles)
+    {
+        fs::path newName = dstDir / (std::to_wstring(index) + L".png");
+
+        try
+        {
+            fs::copy_file(
+                pngPath,
+                newName,
+                fs::copy_options::overwrite_existing
+            );
+
+            std::wcout << L"[OK] "
+                       << pngPath.filename().wstring()
+                       << L" -> "
+                       << newName.wstring()
+                       << std::endl;
+            index++;
+        }
+        catch (const fs::filesystem_error& e)
+        {
+            std::wcerr << L"[FAIL] "
+                       << pngPath.wstring()
+                       << L"  reason: "
+                       << e.what() << std::endl;
+        }
+    }
+
+    std::wcout << L"\n完成拷贝数量: " << (index - 1) << std::endl;
+    return true;
+}
+
+/* ================== 示例 main ================== */
+int main()
+{
+    fs::path srcDir = L"D:\\肇庆X光射线原始图片";
+    fs::path dstDir = L"D:\\Users\\LeyanWang\\Desktop\\detection_data\\images";
+
+    copyAndRenamePng(srcDir, dstDir);
+
+    return 0;
+}

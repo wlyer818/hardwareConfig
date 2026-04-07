@@ -1,0 +1,93 @@
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/photo.hpp>
+#include <opencv2/features2d.hpp>
+using namespace cv;
+int main() {
+    // 读取图像
+    cv::Mat image = cv::imread("2.png");
+    if (image.empty()) {
+        std::cout << "Error: Could not open or find the image!" << std::endl;
+        return -1;
+    }
+
+    // 1. 将RGB转换为HSV颜色空间
+    cv::Mat hsvImage;
+    cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
+
+    // 2. 对HSV的三个通道分别进行CLAHE处理
+    std::vector<cv::Mat> hsvChannels(3);
+    cv::split(hsvImage, hsvChannels);  // 分离H, S, V通道
+
+    // 创建CLAHE对象
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+    clahe->setClipLimit(2.0);
+    clahe->setTilesGridSize(cv::Size(8, 8));
+
+    // 对H、S、V通道分别应用CLAHE
+    clahe->apply(hsvChannels[0], hsvChannels[0]);  // H通道
+    clahe->apply(hsvChannels[1], hsvChannels[1]);  // S通道
+    clahe->apply(hsvChannels[2], hsvChannels[2]);  // V通道
+
+    // 合并均衡化后的通道
+    cv::Mat enhancedHsv;
+    cv::merge(hsvChannels, enhancedHsv);
+
+    // 3. 使用局部二值模式（LBP）提取纹理特征
+    cv::Mat lbpImage = cv::Mat::zeros(image.size(), CV_8UC1);
+    for (int i = 1; i < image.rows - 1; i++) {
+        for (int j = 1; j < image.cols - 1; j++) {
+            uchar center = hsvImage.at<cv::Vec3b>(i, j)[2]; // 亮度通道
+            uchar binaryValue = 0;
+            for (int m = -1; m <= 1; m++) {
+                for (int n = -1; n <= 1; n++) {
+                    if (m == 0 && n == 0) continue;
+                    uchar neighbor = hsvImage.at<cv::Vec3b>(i + m, j + n)[2];
+                    binaryValue = (binaryValue << 1) | (neighbor >= center ? 1 : 0);
+                }
+            }
+            lbpImage.at<uchar>(i, j) = binaryValue;
+        }
+    }
+
+    // 4. 拼接均衡化后的HSV图像和LBP特征图
+    cv::Mat concatenatedImage;
+    std::vector<cv::Mat> concatenatedChannels = { enhancedHsv, lbpImage };
+    cv::merge(concatenatedChannels, concatenatedImage);  // 合并为两个通道图像
+
+    // 5. 主成分分析（PCA）
+    // 将图像展开为一行数据（每个像素为一个数据点）
+    cv::Mat reshapedImage = concatenatedImage.reshape(1, concatenatedImage.rows * concatenatedImage.cols);
+    reshapedImage.convertTo(reshapedImage, CV_32F);  // 转为浮动类型
+
+    // 进行PCA降维
+    cv::PCA pca(reshapedImage, cv::Mat(), cv::PCA::DATA_AS_ROW, 0.95);  // 保留95%的方差
+    cv::Mat pcaResult = pca.project(reshapedImage);  // 获取PCA投影结果
+
+    // 将PCA结果转换回图像格式
+    cv::Mat pcaImage = pcaResult.reshape(1, concatenatedImage.rows);  // 恢复为图像形状
+
+    // 6. 使用GrabCut进行前景分割
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);  // 掩码图像
+    cv::Mat bgdModel, fgdModel;
+
+    // 定义矩形区域，确定前景和背景
+    cv::Rect  rect(0, 160, image.cols - 0, image.rows - 320);
+
+    //// 使用GrabCut算法进行前景分割
+    //cv::grabCut(pcaImage, mask, rect, bgdModel, fgdModel, 5, cv::GC_INIT_WITH_RECT);
+
+    //// 将掩码转为二值图像，只保留前景区域
+    //cv::Mat result;
+    //cv::compare(mask, cv::GC_FGD, mask, cv::CMP_EQ);  // 将前景部分标记为1，背景为0
+    //pcaImage.copyTo(result, mask);  // 使用掩码提取前景区域
+
+    // 7. 显示结果
+    imshow("hsvImage", hsvImage);
+    imshow("pcaImage", pcaImage);
+    //cv::imshow("GrabCut + PCA + LBP", pcaImage);
+    cv::waitKey(0);
+
+    return 0;
+}

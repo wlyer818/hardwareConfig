@@ -1,0 +1,122 @@
+#include <opencv2/opencv.hpp>
+#include <filesystem>
+#include <fstream>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+namespace fs = std::filesystem;
+
+/* =================== 读取（支持中文路径） =================== */
+cv::Mat imread_unicode(const fs::path& path, int flags)
+{
+    std::ifstream ifs(path, std::ios::binary);
+    if (!ifs)
+        return cv::Mat();
+
+    std::vector<uchar> buffer(
+        (std::istreambuf_iterator<char>(ifs)),
+        std::istreambuf_iterator<char>());
+
+    return cv::imdecode(buffer, flags);
+}
+
+/* =================== 写入（支持中文路径） =================== */
+bool imwrite_unicode(const fs::path& path, const cv::Mat& img)
+{
+    std::vector<uchar> buffer;
+    if (!cv::imencode(".png", img, buffer))
+        return false;
+
+    std::ofstream ofs(path, std::ios::binary);
+    if (!ofs)
+        return false;
+
+    ofs.write(reinterpret_cast<const char*>(buffer.data()),
+              buffer.size());
+    return true;
+}
+
+int main()
+{
+    /* ===== 根目录 ===== */
+    fs::path rootDir = L"D:\\肇庆X光射线原始图片\\2024\\bmp10";
+
+    if (!fs::exists(rootDir))
+    {
+        std::wcerr << L"路径不存在：" << rootDir.wstring() << std::endl;
+        return -1;
+    }
+
+    size_t bmpCount = 0;
+    size_t okCount  = 0;
+
+    /* ===== 递归遍历 ===== */
+    for (const auto& entry : fs::recursive_directory_iterator(rootDir))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        fs::path bmpPath = entry.path();
+
+        /* 后缀判断（不区分大小写） */
+        std::wstring ext = bmpPath.extension().wstring();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
+
+        if (ext != L".bmp")
+            continue;
+
+        bmpCount++;
+
+        /* 读取 bmp */
+        cv::Mat img = imread_unicode(bmpPath, cv::IMREAD_UNCHANGED);
+        if (img.empty())
+        {
+            std::wcerr << L"[READ FAIL] "
+                       << bmpPath.wstring() << std::endl;
+            continue;
+        }
+
+        /* 输出 png：同目录、同名 */
+        fs::path pngPath = bmpPath;
+        fs::path dcnPath = bmpPath;
+        dcnPath.replace_extension(L".dcn");
+        pngPath.replace_extension(L".png");
+
+        if (!imwrite_unicode(pngPath, img))
+        {
+            std::wcerr << L"[WRITE FAIL] "
+                       << pngPath.wstring() << std::endl;
+            continue;
+        }
+
+        /* ===== 写成功后，删除原 bmp ===== */
+        try
+        {
+            if (fs::exists(pngPath))
+            {
+                fs::remove(bmpPath);
+                fs::remove(dcnPath);
+                okCount++;
+
+                std::wcout << L"[OK] "
+                           << pngPath.wstring()
+                           << L"  (已删除原始 bmp)"
+                           << std::endl;
+            }
+        }
+        catch (const fs::filesystem_error& e)
+        {
+            std::wcerr << L"[DELETE FAIL] "
+                       << bmpPath.wstring()
+                       << L"  reason: "
+                       << e.what() << std::endl;
+        }
+    }
+
+    std::wcout << L"\n===== 转换完成 =====\n";
+    std::wcout << L"发现 bmp 数量 : " << bmpCount << std::endl;
+    std::wcout << L"成功生成 png : " << okCount << std::endl;
+
+    return 0;
+}

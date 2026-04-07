@@ -1,0 +1,45 @@
+# VS Code 中的正确操作流程
+
+Step 1️⃣ 打开项目根目录
+打开 包含 CMakeLists.txt 的目录
+test_serial/
+ ├── CMakeLists.txt
+ ├── src/
+ ├── bin/
+ └── ...
+
+Step 2️⃣ 选择 CMake 编译器（第一次必须）
+快捷键：
+Ctrl + Shift + P
+输入：
+CMake: Select a Kit
+选择：
+==Visual Studio 2022 releasse amd64==
+（一定是 x64，否则 OpenCV / ONNXRuntime 可能不匹配）
+
+Step 3️⃣ 选择构建类型（Debug）
+Ctrl + Shift + P
+→ CMake: Select Variant
+→ Debug
+
+Step 4️⃣ 配置工程（生成 build）
+Ctrl + Shift + P
+→ CMake: Configure
+或直接点 状态栏上的 Configure
+
+Step 5️⃣ 编译指定目标（很重要）
+你有多个可执行文件：
+add_executable(motortest ...)
+add_executable(cameratest ...)
+add_executable(relaytest ...)
+add_executable(yolov8test ...)
+add_executable(mysqlcontest ...)
+在 VS Code 状态栏左下角：
+📌 点击：
+[all]
+选择你要调试的目标，例如：
+yolov8test
+然后：
+
+Ctrl + Shift + P
+→ CMake: Build
