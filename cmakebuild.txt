@@ -17,10 +17,10 @@ CMake: Select a Kit
 ==Visual Studio 2022 releasse amd64==
 （一定是 x64，否则 OpenCV / ONNXRuntime 可能不匹配）
 
-Step 3️⃣ 选择构建类型（Debug）
+Step 3️⃣ 选择构建类型（Release）
 Ctrl + Shift + P
 → CMake: Select Variant
-→ Debug
+→ Release
 
 Step 4️⃣ 配置工程（生成 build）
 Ctrl + Shift + P
