@@ -56,32 +56,32 @@ RelayControl::~RelayControl() {
     if (sock_ != INVALID_SOCKET) closesocket(sock_);
     WSACleanup();
 }
-//还得完善，按照红绿蓝三灯对应硬件接口来写
+//对应硬件接口，根据协议实现控制逻辑
 void RelayControl::LightControl(Color color, OnOff onoff)
 {
     switch (color) {
     case Color::RED:
         if(onoff==OnOff::on){
-            writeSingleCoil(0,0x0000,true);
-        }
-        else{
-            writeSingleCoil(0,0x0000,false);
-        }
-        break;
-    case Color::YELLOW:
-        if(onoff==OnOff::on){
-            writeSingleCoil(0,0x0001,true);
-        }
-        else{ 
-            writeSingleCoil(0,0x0001,false);
-        }
-        break;
-    case Color::GREEN:
-        if(onoff==OnOff::on){
             writeSingleCoil(0,0x0002,true);
         }
         else{
             writeSingleCoil(0,0x0002,false);
+        }
+        break;
+    case Color::YELLOW:
+        if(onoff==OnOff::on){
+            writeSingleCoil(0,0x0003,true);
+        }
+        else{
+            writeSingleCoil(0,0x0003,false);
+        }
+        break;
+    case Color::GREEN:
+        if(onoff==OnOff::on){
+            writeSingleCoil(0,0x0001,true);
+        }
+        else{
+            writeSingleCoil(0,0x0001,false);
         }
         break;
     case Color::BUZZER:
