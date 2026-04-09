@@ -68,7 +68,7 @@ void RelayControl::LightControl(Color color, OnOff onoff)
             writeSingleCoil(0,0x0000,false);
         }
         break;
-    case Color::BLUE:
+    case Color::YELLOW:
         if(onoff==OnOff::on){
             writeSingleCoil(0,0x0001,true);
         }

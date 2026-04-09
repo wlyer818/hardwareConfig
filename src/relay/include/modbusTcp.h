@@ -7,7 +7,7 @@
 enum class Color : char {
     RED,
     GREEN,
-    BLUE,
+    YELLOW,
     BUZZER
 };
 enum class OnOff : char{

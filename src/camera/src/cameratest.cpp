@@ -3,16 +3,24 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <yoloonnxdetector.h>
-
+#include <memory>
+#include <map>
+#include <set>
 using namespace std;
 using namespace cv;
-
+//尽量使用返回值而不是传入参数的方式来获取结果，除非需要返回多个结果或者需要修改输入参数的值。
 int testGrabFrame(){
-    DaHengCamera camera;
-    camera.open("GCA25100011"); // 替换为实际的相机序列号
+    
+    std::unique_ptr<DaHengCamera> camera = std::make_unique<DaHengCamera>();
+    camera->open("GCA25100011"); // 替换为实际的相机序列号
     cv::Mat frame;
-    camera.grabFrame(frame);
-    camera.resizeKeep(frame, frame, 800, 600); // 可选：调整图像大小以适合显示窗口
+    camera->grabFrame(frame);
+    if(frame.empty()) {
+        cout << "Failed to grab frame from camera." << endl;
+        return -1;
+    }
+    cv::imwrite("frame.png", frame);
+    camera->resizeKeep(frame, frame, 800, 600); // 可选：调整图像大小以适合显示窗口
     if (!frame.empty()) {
         cv::imshow("DaHeng Camera Frame", frame);
         cv::waitKey(0); // 等待按键
@@ -22,9 +30,9 @@ int testGrabFrame(){
     return 0;
 }
 int testVideoDisplay(){
-    DaHengCamera camera;
-    camera.open("GCA25100011"); // 替换为实际的相机序列号
-    camera.videoDisplay();
+    std::shared_ptr<DaHengCamera> camera = std::make_shared<DaHengCamera>();
+    camera->open("GCA25100011"); // 替换为实际的相机序列号
+    camera->videoDisplay();
     return 0;
 }
 // 目标检测测试Video
@@ -108,7 +116,7 @@ void stitchTest(){
 }
 void raoteTest(){
     cv::Mat img = imread(
-        "D:\\Users\\LeyanWang\\Desktop\\git_test\\src\\python_test\\images\\DR_2026-03-27_12-00-23_0002_first.png");
+        "D:\\Users\\LeyanWang\\Desktop\\git_test\\src\\camera\\file\\img.png");
     cv::Mat test = rotateImage(img,-90);
     RGBPicProcessor::resizeKeep(test,test,800,800);
     cv::imshow("test",test);
@@ -116,7 +124,6 @@ void raoteTest(){
 
 }
 int main(){
-    // stitchTest();
-    raoteTest();
+    testGrabFrame();
     return 0;
 }
