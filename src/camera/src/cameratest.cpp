@@ -49,11 +49,12 @@ void testDetectVideo(){
     camera.open("GCA25100011"); // 替换为实际的相机序列号
     // 创建检测器实例
     YoloOnnxDetector detector("D:\\Users\\LeyanWang\\Desktop\\git_test\\checkpoints\\rgbpicdetect.onnx");
-    while (camera.opened())
     {
 
         cv::Mat frame;
         camera.grabFrame(frame);
+        frame = PicProcessor::roatateImage(frame, -90);
+        PicProcessor::resizeKeep(frame, frame, 800, 600); // 可选：调整图像大小以适合显示窗口
         if(frame.empty()) {
             cout << "Failed to grab frame from camera." << endl;
             return;
@@ -67,6 +68,7 @@ void testDetectVideo(){
         detector.drawResults(frame);
         // 显示检测结果
         cv::imshow("Detection Result", frame);
+        cv::waitKey(0); // 等待按键
     }
 
 }
@@ -100,6 +102,8 @@ void stitchTest(){
 }
 
 int main(){
-    testGrabFrame();
+    // testGrabFrame();
+    // testVideoDisplay();
+    testDetectVideo();
     return 0;
 }

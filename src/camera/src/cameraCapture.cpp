@@ -1,5 +1,6 @@
 #include "cameraCapture.h"
 #include "GalaxyIncludes.h"
+#include <picprocess.h>
 DaHengCamera::DaHengCamera() : m_isOpened(false)
 {
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_SILENT);
@@ -101,6 +102,7 @@ void DaHengCamera::videoDisplay()
     {
         if (grabFrame(frame))
         {
+            frame = PicProcessor::roatateImage(frame, -0);
             resizeKeep(frame, frame, 800, 600);
             cv::imshow("DaHeng", frame);
         }

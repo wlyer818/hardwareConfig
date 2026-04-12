@@ -13,11 +13,11 @@ int main() {
     Sleep(2000); //等待2秒
     //灭红灯
     relayControlor.LightControl(Color::RED, OnOff::off);
-    //亮蓝灯
-    relayControlor.LightControl(Color::BLUE, OnOff::on);
+    //亮黄灯
+    relayControlor.LightControl(Color::YELLOW, OnOff::on);
     Sleep(2000); //等待2秒
-    //灭蓝灯
-    relayControlor.LightControl(Color::BLUE, OnOff::off);
+    //灭黄灯
+    relayControlor.LightControl(Color::YELLOW, OnOff::off);
     //亮绿灯
     relayControlor.LightControl(Color::GREEN, OnOff::on);   
     Sleep(2000); //等待2秒

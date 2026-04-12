@@ -15,8 +15,8 @@ int main()
         return 0;
     }
     // 执行动作
-    // motor.run(80, -50, 0);// 反转 5 转往右走
-    motor.run(80, 50, 0);// 正转 5 转往左走
+    motor.run(80, -50, 0);// 反转 5 转往右走
+    // motor.run(80, 50, 0);// 正转 5 转往左走
     Sleep(2000);
     while(true){
         motor.readStatus(status);// 读取运行状态

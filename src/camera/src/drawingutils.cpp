@@ -341,7 +341,7 @@ void plot_results(cv::Mat img,
         float top  = res.bbox.y;
 
         // 1. 绘制检测框
-        // cv::rectangle(img, res.bbox, color[res.class_idx], boxThickness);
+        cv::rectangle(img, res.bbox, color[res.class_idx], boxThickness);
 
         // 2. 类别名
         std::string class_name;
@@ -380,21 +380,21 @@ void plot_results(cv::Mat img,
         label_rect &= cv::Rect(0, 0, img_w, img_h);
 
         // 7. 绘制标签
-        // cv::rectangle(img, label_rect, color[res.class_idx], cv::FILLED);
+        cv::rectangle(img, label_rect, color[res.class_idx], cv::FILLED);
 
-        // cv::putText(
-        //     img,
-        //     label,
-        //     cv::Point(
-        //         label_rect.x + padding,
-        //         label_rect.y + label_rect.height - padding
-        //     ),
-        //     cv::FONT_HERSHEY_SIMPLEX,
-        //     fontScale,
-        //     cv::Scalar(255, 255, 255),
-        //     textThickness,
-        //     cv::LINE_AA
-        // );
+        cv::putText(
+            img,
+            label,
+            cv::Point(
+                label_rect.x + padding,
+                label_rect.y + label_rect.height - padding
+            ),
+            cv::FONT_HERSHEY_SIMPLEX,
+            fontScale,
+            cv::Scalar(255, 255, 255),
+            textThickness,
+            cv::LINE_AA
+        );
 
         // ================= 姿态关键点 =================
         if (!res.keypoints.empty())
