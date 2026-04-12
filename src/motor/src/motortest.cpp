@@ -5,34 +5,31 @@
 int main()
 {
     MotorControl motor("COM4",9600);
+    // 读状态
+    uint16_t  status = 0;
+    int16_t speed = 0;
+    int32_t posErr = 0;
 
     if (!motor.open()) {
         std::cout << "Failed to open motor control\n";
         return 0;
     }
-
     // 执行动作
-    // motor.run(60, -50, 0);// 反转 5 转往右走
-    motor.run(60, 50, 0);// 正转 5 转往左走
-
-    // 读状态
-    uint16_t alarm = 0, status = 0;
-    int16_t speed = 0;
-    int32_t posErr = 0;
-    for(int i = 1;i<=40;i++){
-            
-        motor.readAlarm(alarm);// 读取报警状态
+    // motor.run(80, -50, 0);// 反转 5 转往右走
+    motor.run(80, 50, 0);// 正转 5 转往左走
+    Sleep(2000);
+    while(true){
         motor.readStatus(status);// 读取运行状态
         motor.readPosError(posErr);// 读取位置误差
-        motor.readSpeed(speed);// 读取位置误差
-        std::cout<<"di"<<i<<"miao:\n";
-        std::cout << "Alarm=" << alarm
-                << "  Status=" << status
+        motor.readSpeed(speed);// 读取速度
+        std::cout<< "  Status=" << status
                 << "  speed=" << speed
-                << "  PosErr=" << posErr << "\n";
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+                << "  PosErr=" << posErr << std::endl;
+        if(speed == 0) 
+            break;
+        else
+            std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-
     motor.close();
     return 0;
 }
