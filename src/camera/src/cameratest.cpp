@@ -6,15 +6,22 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <picprocess.h>
+
 using namespace std;
 using namespace cv;
 //尽量使用返回值而不是传入参数的方式来获取结果，除非需要返回多个结果或者需要修改输入参数的值。
 int testGrabFrame(){
-    
     std::unique_ptr<DaHengCamera> camera = std::make_unique<DaHengCamera>();
-    camera->open("GCA25100011"); // 替换为实际的相机序列号
+    if(camera->open("GCA25100011")) { // 替换为实际的相机序列号
+        cout << "Camera opened successfully." << endl;
+    } else {
+        cout << "Failed to open camera." << endl;
+        return -1;
+    }
     cv::Mat frame;
     camera->grabFrame(frame);
+    frame = PicProcessor::roatateImage(frame, -90);
     if(frame.empty()) {
         cout << "Failed to grab frame from camera." << endl;
         return -1;
@@ -63,30 +70,7 @@ void testDetectVideo(){
     }
 
 }
-cv::Mat rotateImage(const cv::Mat& img, int angle)
-{
-    // 获取图像中心点
-    cv::Point2f center(img.cols / 2.0F, img.rows / 2.0F);
 
-    // 获取旋转矩阵
-    cv::Mat rotMat = cv::getRotationMatrix2D(center, angle, 1.0);
-
-    // 计算旋转后图像的边界大小，防止裁剪
-    double abs_cos = std::abs(rotMat.at<double>(0, 0));
-    double abs_sin = std::abs(rotMat.at<double>(0, 1));
-    int bound_w = int(img.rows * abs_sin + img.cols * abs_cos);
-    int bound_h = int(img.rows * abs_cos + img.cols * abs_sin);
-
-    // 调整旋转矩阵的平移量，使整个图像显示完整
-    rotMat.at<double>(0, 2) += bound_w / 2.0 - center.x;
-    rotMat.at<double>(1, 2) += bound_h / 2.0 - center.y;
-
-    // 旋转图像
-    cv::Mat rotated;
-    cv::warpAffine(img, rotated, rotMat, cv::Size(bound_w, bound_h));
-
-    return rotated;
-}
 
 void stitchTest(){
     cv::Mat img1 = imread("D:\\Users\\LeyanWang\\Desktop\\git_test\\img1.png");
@@ -114,15 +98,7 @@ void stitchTest(){
         cv::imwrite("D:\\Users\\LeyanWang\\Desktop\\git_test\\src\\camera\\file\\res.png",res);
     return ;
 }
-void raoteTest(){
-    cv::Mat img = imread(
-        "D:\\Users\\LeyanWang\\Desktop\\git_test\\src\\camera\\file\\img.png");
-    cv::Mat test = rotateImage(img,-90);
-    RGBPicProcessor::resizeKeep(test,test,800,800);
-    cv::imshow("test",test);
-    cv::waitKey(0);
 
-}
 int main(){
     testGrabFrame();
     return 0;

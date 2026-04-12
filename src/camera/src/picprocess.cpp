@@ -797,3 +797,28 @@ void PicProcessor::applyMedianBlur(const cv::Mat& src, cv::Mat& dst, int kernelS
 void PicProcessor::applyBilateralFilter(const cv::Mat& src, cv::Mat& dst, int diameter = 9, double sigmaColor = 75, double sigmaSpace = 75){
     cv::bilateralFilter(src, dst, diameter, sigmaColor, sigmaSpace);
 }
+
+cv::Mat PicProcessor::roatateImage(const cv::Mat &img, int angle)
+{
+    // 获取图像中心点
+    cv::Point2f center(img.cols / 2.0F, img.rows / 2.0F);
+
+    // 获取旋转矩阵
+    cv::Mat rotMat = cv::getRotationMatrix2D(center, angle, 1.0);
+
+    // 计算旋转后图像的边界大小，防止裁剪
+    double abs_cos = std::abs(rotMat.at<double>(0, 0));
+    double abs_sin = std::abs(rotMat.at<double>(0, 1));
+    int bound_w = int(img.rows * abs_sin + img.cols * abs_cos);
+    int bound_h = int(img.rows * abs_cos + img.cols * abs_sin);
+
+    // 调整旋转矩阵的平移量，使整个图像显示完整
+    rotMat.at<double>(0, 2) += bound_w / 2.0 - center.x;
+    rotMat.at<double>(1, 2) += bound_h / 2.0 - center.y;
+
+    // 旋转图像
+    cv::Mat rotated;
+    cv::warpAffine(img, rotated, rotMat, cv::Size(bound_w, bound_h));
+
+    return rotated;
+}

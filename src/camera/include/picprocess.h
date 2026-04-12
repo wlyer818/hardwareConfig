@@ -56,7 +56,7 @@ public:
     //Savitzky-Golay平滑
     static std::vector<double> savitzkyGolaySmooth(const std::vector<double>& y);
     //3级异常点对滤波（更严格）
-    static std::vector<EdgePair> PicProcessor::filterEdgePairsPlus3(
+    static std::vector<EdgePair> filterEdgePairsPlus3(
     const std::vector<EdgePair>& input);
     //RGB转灰度
     static void RGB2Gray(const cv::Mat& image, cv::Mat& grayImage);
@@ -64,9 +64,10 @@ public:
     static void applyGaussianBlur(const cv::Mat& src, cv::Mat& dst, int kernelSize);
     static void applyMedianBlur(const cv::Mat& src, cv::Mat& dst, int kernelSize);
     static void applyBilateralFilter(const cv::Mat& src, cv::Mat& dst, int diameter, double sigmaColor, double sigmaSpace);
-    static cv::Mat PicProcessor::performPCA(const cv::Mat& data, int k) ;
-    static cv::Mat PicProcessor::computeLBP(const cv::Mat& src) ;
-    static void PicProcessor::GrabCutSegImproved(const cv::Mat& image, cv::Mat& outputMask, const cv::Rect rect, std::string BackColor);
+    static cv::Mat performPCA(const cv::Mat& data, int k) ;
+    static cv::Mat computeLBP(const cv::Mat& src) ;
+    static void GrabCutSegImproved(const cv::Mat& image, cv::Mat& outputMask, const cv::Rect rect, std::string BackColor);
+    static cv::Mat roatateImage(const cv::Mat &img, int angle);
 public:
     cv::Mat m_frame1;
     cv::Mat m_frame2;
